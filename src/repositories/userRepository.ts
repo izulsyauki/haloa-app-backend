@@ -5,7 +5,6 @@ export const createdUser = async (user: User) => {
     return await prisma.user.create({
         data: {
             name: user.name,
-            address: user.address,
             email: user.email,
             password: user.password,
         },
@@ -57,7 +56,6 @@ export const updateUser = async (user: User) => {
         where: { id: user.id },
         data: {
             name: user.name,
-            address: user.address,
         },
     });
 };
