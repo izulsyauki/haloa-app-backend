@@ -1,61 +1,81 @@
-import { User } from "@prisma/client";
+import { RegisterDto, UpdateUserDto } from "../dto/auth-dto";
 import prisma from "../libs/prisma";
 
-export const createdUser = async (user: User) => {
-    return await prisma.user.create({
+export const createUser = async (registerDto: RegisterDto) => {
+    return prisma.users.create({
         data: {
-            name: user.name,
-            email: user.email,
-            password: user.password,
+            email: registerDto.email,
+            username: registerDto.username,
+            password: registerDto.password,
+            profile: {
+                create: {
+                    fullName: registerDto.fullName,
+                },
+            },
         },
     });
 };
 
-export const findManyUsers = async () => {
-    return await prisma.user.findMany();
-};
-
-export const findUniqueUser = async (id: number) => {
-    return await prisma.user.findUnique({
-        where: { id },
+export const findUserAndProfile = async (username: string) => {
+    return prisma.users.findFirst({
+        where: {
+            username,
+        },
+        select: {
+            id: true,
+            email: true,
+            username: true,
+            profile: true,
+        },
     });
 };
 
-export const findUniqueUserByEmail = async (email: string) => {
-    return await prisma.user.findUnique({
-        where: { email },
-    });
-};
-
-export const findUserByName = async (query: string) => {
-    // SELECT * FROM USER  WHERE name = 'name'
-    return await prisma.user.findMany({
+export const searchUsers = async (query: string) => {
+    return prisma.users.findMany({
         where: {
             OR: [
                 {
-                    name: {
+                    username: {
                         contains: query,
                     },
-                    email: {
-                        contains: query,
+                },
+                {
+                    profile: {
+                        fullName: {
+                            contains: query,
+                        },
+                    },
+                },
+                {
+                    profile: {
+                        bio: { contains: query },
                     },
                 },
             ],
         },
+        include: {
+            profile: true,
+        },
+
+        take: 10, // limit
     });
 };
 
-export const deleteUser = async (id: number) => {
-    return await prisma.user.delete({
-        where: { id },
-    });
-};
-
-export const updateUser = async (user: User) => {
-    return await prisma.user.update({
-        where: { id: user.id },
-        data: {
-            name: user.name,
+export const findUserByEmailorUsername = async (usernameOrEmail: string) => {
+    return prisma.users.findFirst({
+        where: {
+            OR: [
+                {
+                    username: {
+                        equals: usernameOrEmail,
+                    },
+                },
+                {
+                    email: {
+                        equals: usernameOrEmail,
+                    },
+                },
+            ],
         },
     });
 };

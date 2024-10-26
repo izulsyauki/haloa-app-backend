@@ -13,24 +13,70 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+model Users {
   id        Int      @id @default(autoincrement())
-  name      String
+  username  String   @unique
   password  String
   email     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  threads Threads[]
+  profile   Profiles?
+  threads   Threads[]
+  follower  Follows[] @relation("follower")
+  following Follows[] @relation("following")
+  like      Likes[]
+}
+
+model Profiles {
+  id       Int     @id @default(autoincrement())
+  fullName String?
+  avatar   String?
+  banner   String?
+  bio      String?
+
+  userId Int   @unique
+  user   Users @relation(fields: [userId], references: [id])
 }
 
 model Threads {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  content   String?
-  media     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           Int           @id @default(autoincrement())
+  userId       Int
+  content      String?
+  mainThreadId Int?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  media        ThreadMedia[]
 
-  user User @relation(references: [id], fields: [userId])
+  like       Likes[]
+  user       Users     @relation(references: [id], fields: [userId])
+  mainThread Threads?  @relation("ThreadReplies", references: [id], fields: [mainThreadId])
+  replies    Threads[] @relation("ThreadReplies")
+}
+
+model ThreadMedia {
+  id       Int    @id @default(autoincrement())
+  url      String
+  threadId Int
+
+  thread Threads @relation(references: [id], fields: [threadId])
+}
+
+model Follows {
+  follower    Users @relation("follower", references: [id], fields: [followerId])
+  followerId  Int
+  following   Users @relation("following", references: [id], fields: [followingId])
+  followingId Int
+
+  @@id([followingId, followerId])
+}
+
+model Likes {
+  threadId Int
+  userId   Int
+
+  thread Threads @relation(references: [id], fields: [threadId])
+  user   Users   @relation(references: [id], fields: [userId])
+
+  @@id([threadId, userId])
 }

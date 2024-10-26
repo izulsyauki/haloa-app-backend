@@ -1,21 +1,35 @@
+import { CreateThreadDto } from "../dto/thread-dto";
 import * as threadRepository from "../repositories/threadRepository";
-import { Threads } from "@prisma/client";
-import { uploadToCloudinary } from "./uploadService";
 
-export const createThread = async (
-    thread: Threads,
-    files: Express.Multer.File[] | undefined
-) => {
-    try {
-        if (files && files.length > 0) {
-            const mediaUrls = await uploadToCloudinary(files);
-
-            thread.media = mediaUrls.join(",");
-        }
-
-        return await threadRepository.createThread(thread);
-    } catch (error) {
-        console.error("Error creating thread:", error);
-        throw error;
+/**
+ * Membuat thread baru dan menyimpan media yang terkait jika ada.
+ * 
+ * @param {CreateThreadDto} body - Data untuk membuat thread baru.
+ * @returns {Promise<Object>} - Mengembalikan thread yang baru dibuat beserta media yang terkait jika ada.
+ */
+export const createThread = async (body: CreateThreadDto) => {
+    const thread = await threadRepository.createThread(body);
+    if (body.media) {
+         await threadRepository.createThreadMedia(body.media, thread.id);
     }
+
+    const response = await threadRepository.findThreadById(thread.id, false);
+
+    if (response) {
+        return response;
+    }
+
+    return thread;
+};
+
+export const getThreads = async () => {
+    return await threadRepository.findManyThreads();
+};
+
+export const getThread = async (id: number) => {
+    return await threadRepository.findThreadById(id);
+};
+
+export const getThreadsByLoggedInUser = async (userId: number, take: number) => {
+    return await threadRepository.findThreadByFollowerId(userId, take);
 };

@@ -1,19 +1,18 @@
 import { Request, Response } from "express";
+import { CreateThreadDto } from "../dto/thread-dto";
+import { uploadToCloudinary } from "../libs/cloudinary";
 import * as threadService from "../services/threadService";
-import { findManyThreads } from "../repositories/threadRepository";
-import { Threads } from "@prisma/client";
 
 export const createThread = async (req: Request, res: Response) => {
     try {
-        const { body } = req;
-        const files = req.files as Express.Multer.File[];
-        const user = res.locals.user;
-        const threadData: Threads = {
-            ...body,
-            userId: user.id,
-        };
+        const body: CreateThreadDto = req.body;
+        body.userId = res.locals.user.id;
 
-        const thread = await threadService.createThread(threadData, files);
+        if (req.files) {
+            body.media = await uploadToCloudinary(req.files as Express.Multer.File[]);
+        }
+
+        const thread = await threadService.createThread(body);
         res.json(thread);
     } catch (error) {
         console.log(error);
@@ -23,10 +22,33 @@ export const createThread = async (req: Request, res: Response) => {
 
 export const getThreads = async (req: Request, res: Response) => {
     try {
-        const thread = await findManyThreads();
-        res.json(thread);
+        const threads = await threadService.getThreads();
+        res.json(threads);
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: (error as Error).message });
     }
 };
+
+export const detailThread = async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id;
+        const thread = await threadService.getThread(+id);
+        res.json(thread);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: (error as Error).message });
+    }
+}
+
+export const feeds = async (req: Request, res: Response) => {
+    try {
+        const userId = res.locals.user.id;
+        const take = req.query.take ? +req.query.take : 0;
+        // const threads = await threadService.getThreadsByLoggedInUser(userId, take);
+        // res.json(threads);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: (error as Error).message });
+    }
+}
