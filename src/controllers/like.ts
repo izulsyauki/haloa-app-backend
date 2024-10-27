@@ -7,7 +7,7 @@ export const createLike = async (req: Request, res: Response) => {
         const userId = res.locals.user.id;
         const threadId = req.body.threadId;
         const like = await likeService.createLike(userId, threadId);
-        res.json({ meesage: like });
+        res.json({ message: like });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: (error as Error).message });

@@ -3,7 +3,7 @@ import * as userServices from "../services/userService";
 
 export const searchUsers = async (req: Request, res: Response) => {
     try {
-        const search = req.query.username as string;
+        const search = req.query.contains as string;
 
         const users = await userServices.searhUsers(search);
         res.json(users);

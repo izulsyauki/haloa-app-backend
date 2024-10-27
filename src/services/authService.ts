@@ -31,22 +31,21 @@ export const register = async (registerInfo: RegisterDto) => {
     return createdUser;
 };
 
-export const login = async (loginInfo: LoginDto) => {
+export const login = async (loginInfo: LoginDto): Promise<{ token: string; user: any }> => {
     const validUser = validateData(loginSchema, loginInfo);
     if (validUser.error) {
         throw new Error(validUser.error);
     }
-
     const user = await userRepository.findUserByEmailorUsername(
-        loginInfo.username
+        loginInfo.username || loginInfo.email || ""
     );
 
-    if (!user){
+    if (!user) {
         throw new Error("User not found");
     }
 
-    const isValidPaswword = await bcrypt.compare(loginInfo.password, user.password);
-    if (!isValidPaswword) {
+    const isValidPassword = await bcrypt.compare(loginInfo.password, user.password);
+    if (!isValidPassword) {
         throw new Error("Email or password is incorrect");
     }
 
@@ -54,9 +53,11 @@ export const login = async (loginInfo: LoginDto) => {
         id: user.id,
         username: user.username,
         email: user.email,
-    }, "RAHASIA", {
+    }, process.env.JWT_SECRET || "RAHASIA", {
         expiresIn: "1d",
     });
 
-    return token;
+    const userWithoutPassword = { ...user, password: undefined };
+
+    return { token, user: userWithoutPassword };
 };

@@ -46,11 +46,6 @@ export const searchUsers = async (query: string) => {
                         },
                     },
                 },
-                {
-                    profile: {
-                        bio: { contains: query },
-                    },
-                },
             ],
         },
         include: {

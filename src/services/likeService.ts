@@ -1,14 +1,19 @@
 import * as likeRepository from "../repositories/likeRepository";
 
 export const createLike = async (userId: number, threadId: number) => {
+    const liked = { isLiked: false, threadId: threadId };
     const exist = await likeRepository.findLike(userId, threadId);
     if (exist) {
         await likeRepository.deleteLike(userId, threadId);
-        return "Unlike";
+        liked.isLiked = false;
+    } else {
+        const like = await likeRepository.createLike(userId, threadId);
+        if (like) {
+            liked.isLiked = true;
+        }
     }
 
-    const like = await likeRepository.createLike(userId, threadId);
-    return { liked: like };
+    return liked;
 };
 
 export const checkLike = async (userId: number, threadId: number) => {

@@ -17,10 +17,8 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
     try {
         const dataUserForLogin = req.body as LoginDto;
-        const token = await authService.login(dataUserForLogin);
-        res.json({
-            token,
-        });
+        const { token, user } = await authService.login(dataUserForLogin);
+        res.json({ token, user });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: (error as Error).message });
@@ -29,10 +27,15 @@ export const login = async (req: Request, res: Response) => {
 
 export const authCheck = async (req: Request, res: Response) => {
     try {
+        console.log("ini user:" ,res.locals.user);
         const user = res.locals.user;
 
-        const profile = await profileService.getProfile(user.username);
+        if(!user) {
+             res.status(401).json({message: "account unathorized"})
+             return;
+        }
 
+        const profile = await profileService.getProfile(user.username);
         res.json({profile});
     } catch (error) {
         console.log(error);
