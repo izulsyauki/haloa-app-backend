@@ -28,3 +28,14 @@ export const checkFollow = async (req: Request, res: Response) => {
         res.status(500).json({ message: (error as Error).message });
     }
 };
+
+export const getFollowCounts = async (req: Request, res: Response) => {
+    try {
+        const userId = res.locals.user.id;
+        const counts = await followService.getFollowCounts(userId);
+        res.json(counts);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: (error as Error).message });
+    }
+};

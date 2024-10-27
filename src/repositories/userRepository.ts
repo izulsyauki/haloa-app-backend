@@ -21,10 +21,7 @@ export const findUserAndProfile = async (username: string) => {
         where: {
             username,
         },
-        select: {
-            id: true,
-            email: true,
-            username: true,
+        include: {
             profile: true,
         },
     });
@@ -71,6 +68,28 @@ export const findUserByEmailorUsername = async (usernameOrEmail: string) => {
                     },
                 },
             ],
+        },
+    });
+};
+
+export const getSuggestedUsers = async (userId: number, limit: number = 3) => {
+    return prisma.users.findMany({
+        where: {
+            NOT: {
+                id: userId,
+            },
+            follower: {
+                none: {
+                    followerId: userId,
+                },
+            },
+        },
+        include: {
+            profile: true,
+        },
+        take: limit,
+        orderBy: {
+            createdAt: "desc",
         },
     });
 };

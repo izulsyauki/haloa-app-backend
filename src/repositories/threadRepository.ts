@@ -24,6 +24,8 @@ export const findManyThreads = async () => {
             media: true,
             user: {
                 select: {
+                    id: true,
+                    username: true,
                     profile: true,
                 },
             },

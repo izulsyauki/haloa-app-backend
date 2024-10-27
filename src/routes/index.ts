@@ -5,6 +5,7 @@ import threadRouter from "./threadRouter";
 import userRouter from "./userRouter";
 import profileRouter from "./profileRouter";
 import likeRouter from "./likeRouter";
+import followRouter from "./followRouter";
 const router = Router();
 
 router.get("/", (req, res) => {
@@ -15,6 +16,7 @@ router.get("/", (req, res) => {
 
 router.use("/threads", authentication, threadRouter);
 router.use("/user", authentication, userRouter);
+router.use("/follow", authentication, followRouter);
 router.use("/like", authentication, likeRouter);
 router.use("/auth", authRouter);
 router.use("/profile", authentication, profileRouter);

@@ -13,3 +13,15 @@ export const searchUsers = async (req: Request, res: Response) => {
     }
 };
 
+export const getSuggestedUsers = async (req: Request, res: Response) => {
+    try {
+        const userId = res.locals.user.id;
+        const limit = Number(req.query.limit) || 3;
+        const users = await userServices.getSuggestedUsers(userId, limit);
+        res.json(users);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: (error as Error).message})
+    }
+};
+
