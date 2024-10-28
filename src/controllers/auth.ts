@@ -27,7 +27,6 @@ export const login = async (req: Request, res: Response) => {
 
 export const authCheck = async (req: Request, res: Response) => {
     try {
-        console.log("ini user:" ,res.locals.user);
         const user = res.locals.user;
 
         if(!user) {

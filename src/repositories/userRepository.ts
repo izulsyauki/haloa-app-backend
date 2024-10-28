@@ -72,24 +72,34 @@ export const findUserByEmailorUsername = async (usernameOrEmail: string) => {
     });
 };
 
-export const getSuggestedUsers = async (userId: number, limit: number = 3) => {
-    return prisma.users.findMany({
-        where: {
-            NOT: {
-                id: userId,
-            },
-            follower: {
-                none: {
-                    followerId: userId,
+export const getSuggestedUsers = async (currentUserId: number, limit: number) => {
+    try {
+        const users = await prisma.users.findMany({
+            take: limit,
+            where: {
+                NOT: {
+                    id: currentUserId,
                 },
+                // Exclude users yang sudah di-follow
+                follower: {
+                    none: {
+                        followerId: currentUserId
+                    }
+                }
             },
-        },
-        include: {
-            profile: true,
-        },
-        take: limit,
-        orderBy: {
-            createdAt: "desc",
-        },
-    });
+            include: {
+                profile: true,
+                follower: {
+                    where: {
+                        followerId: currentUserId
+                    }
+                }
+            }
+        });
+
+        return users;
+    } catch (error) {
+        console.error("Error in getSuggestedUsers repository:", error);
+        throw error;
+    }
 };
