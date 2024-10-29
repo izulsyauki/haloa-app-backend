@@ -35,6 +35,9 @@ export const findManyThreads = async () => {
                 },
             },
         },
+        orderBy: {
+            createdAt: "desc",
+        },
     });
 };
 

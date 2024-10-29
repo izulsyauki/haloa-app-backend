@@ -39,7 +39,6 @@ export const getFollowCounts = async (req: Request, res: Response) => {
     try {
         const userId = res.locals.user.id;
         const counts = await followService.getFollowCounts(userId);
-        console.log("Follow counts for user", userId, ":", counts); // debugging
         res.json(counts);
     } catch (error) {
         console.log(error);

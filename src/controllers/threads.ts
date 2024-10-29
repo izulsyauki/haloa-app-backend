@@ -45,8 +45,8 @@ export const feeds = async (req: Request, res: Response) => {
     try {
         const userId = res.locals.user.id;
         const take = req.query.take ? +req.query.take : 0;
-        // const threads = await threadService.getThreadsByLoggedInUser(userId, take);
-        // res.json(threads);
+        const threads = await threadService.getThreadsByLoggedInUser(userId, take);
+        res.json(threads);
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: (error as Error).message });
