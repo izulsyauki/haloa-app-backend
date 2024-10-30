@@ -33,7 +33,6 @@ export const checkFollow = async (followerId: number, followingId: number) => {
 export const getFollowCounts = async (userId: number) => {
     const followers = await followRepository.countFollowers(userId);
     const following = await followRepository.countFollowing(userId);
-    console.log("Service counts:", { followers, following }); // debugging
     return { followers, following };
 };
 

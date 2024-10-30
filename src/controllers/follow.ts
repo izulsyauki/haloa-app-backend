@@ -7,7 +7,6 @@ export const createFollow = async (req: Request, res: Response) => {
         const followerId = res.locals.user.id; // user yang sedang login
         const followingId = req.body.followingId; // user yang ingin difollow
 
-        console.log("Creating follow relation:", { followerId, followingId });
 
         const follow = await followService.createFollow(
             followerId,

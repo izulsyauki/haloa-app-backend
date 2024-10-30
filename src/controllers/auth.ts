@@ -33,9 +33,8 @@ export const authCheck = async (req: Request, res: Response) => {
              res.status(401).json({message: "account unathorized"})
              return;
         }
-
         const profile = await profileService.getProfile(user.username);
-        res.json({profile});
+        res.json({ profile });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: (error as Error).message });
