@@ -33,3 +33,7 @@ export const getThread = async (id: number) => {
 export const getThreadsByLoggedInUser = async (userId: number, take: number) => {
     return await threadRepository.findThreadByFollowerId(userId, take);
 };
+
+export const getUserThreads = async (userId: number) => {
+    return await threadRepository.findThreadByUserId(userId);
+};

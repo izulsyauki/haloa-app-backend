@@ -120,3 +120,30 @@ export const findThreadByFollowerId = async (userId: number, take: number) => {
         },
     });
 };
+
+export const findThreadByUserId = async (userId: number) => {
+    return await prisma.threads.findMany({
+        where: {
+            userId: userId,
+        },
+        include: {
+            media: true,
+            user: {
+                select: {
+                    id: true,
+                    username: true,
+                    profile: true,
+                },
+            },
+            _count: {
+                select: {
+                    like: true,
+                },
+            },
+        },
+        orderBy: {
+            createdAt: "desc",
+        },
+        take: 10,
+    });
+};

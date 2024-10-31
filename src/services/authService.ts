@@ -54,7 +54,7 @@ export const login = async (loginInfo: LoginDto): Promise<{ token: string; user:
         username: user.username,
         email: user.email,
     }, process.env.JWT_SECRET || "RAHASIA", {
-        expiresIn: "1d",
+        expiresIn: "30d",
     });
 
     const userWithoutPassword = { ...user, password: undefined };

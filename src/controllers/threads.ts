@@ -52,3 +52,15 @@ export const feeds = async (req: Request, res: Response) => {
         res.status(500).json({ message: (error as Error).message });
     }
 }
+
+
+export const getUserThreads = async (req: Request, res: Response) => {
+    try {
+        const userId = res.locals.user.id;
+        const threads = await threadService.getUserThreads(userId);
+        res.json(threads);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: (error as Error).message });
+    }
+}
