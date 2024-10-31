@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import * as followService from "../services/followService";
-import * as followRepository from "../repositories/followRepository";
 
 export const createFollow = async (req: Request, res: Response) => {
     try {
