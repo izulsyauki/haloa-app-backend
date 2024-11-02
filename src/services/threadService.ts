@@ -22,8 +22,14 @@ export const createThread = async (body: CreateThreadDto) => {
     return thread;
 };
 
-export const getThreads = async () => {
-    return await threadRepository.findManyThreads();
+export const getThreads = async (userId: number) => {
+    const threads = await threadRepository.findManyThreads(userId);
+
+    return threads.map(thread => ({
+        ...thread,
+        isLiked: thread.like.length > 0,
+        like: undefined,
+    }));
 };
 
 export const getThread = async (id: number) => {

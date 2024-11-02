@@ -18,20 +18,24 @@ export const createThreadMedia = async (media: ThreadMedia[], id: number) => {
     });
 };
 
-export const findManyThreads = async () => {
+export const findManyThreads = async (userId: number) => {
     return await prisma.threads.findMany({
         include: {
-            media: true,
             user: {
-                select: {
-                    id: true,
-                    username: true,
+                include: {
                     profile: true,
+                },
+            },
+            media: true,
+            like: {
+                where: {
+                    userId: userId,
                 },
             },
             _count: {
                 select: {
                     like: true,
+                    replies: true,
                 },
             },
         },

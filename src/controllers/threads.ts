@@ -22,7 +22,8 @@ export const createThread = async (req: Request, res: Response) => {
 
 export const getThreads = async (req: Request, res: Response) => {
     try {
-        const threads = await threadService.getThreads();
+        const userId = res.locals.user.id;
+        const threads = await threadService.getThreads(userId);
         res.json(threads);
     } catch (error) {
         console.log(error);

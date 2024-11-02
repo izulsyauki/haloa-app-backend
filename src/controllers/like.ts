@@ -6,8 +6,22 @@ export const createLike = async (req: Request, res: Response) => {
     try {
         const userId = res.locals.user.id;
         const threadId = req.body.threadId;
+        
+        // Proses like
         const like = await likeService.createLike(userId, threadId);
-        res.json({ message: like });
+        
+        // Ambil jumlah like terbaru
+        const likeCount = await likeRepository.countLike(threadId);
+        
+        // Cek status like terbaru
+        const isLiked = await likeService.checkLike(userId, threadId);
+        
+        // Kirim response dengan format yang sesuai
+        res.json({
+            isLiked: !!isLiked,
+            likesCount: likeCount,
+            message: like
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: (error as Error).message });
