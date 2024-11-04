@@ -31,10 +31,11 @@ export const getThreads = async (req: Request, res: Response) => {
     }
 };
 
-export const detailThread = async (req: Request, res: Response) => {
+export const getThreadDetail = async (req: Request, res: Response) => {
     try {
-        const id = req.params.id;
-        const thread = await threadService.getThread(+id);
+        const threadId = Number(req.params.id);
+        const userId = res.locals.user.id;
+        const thread = await threadService.getThreadWithReplies(threadId, userId);
         res.json(thread);
     } catch (error) {
         console.log(error);
@@ -60,6 +61,31 @@ export const getUserThreads = async (req: Request, res: Response) => {
         const userId = res.locals.user.id;
         const threads = await threadService.getUserThreads(userId);
         res.json(threads);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: (error as Error).message });
+    }
+}
+
+export const createReply = async (req: Request, res: Response) => {
+    try {
+        const threadId = Number(req.params.threadId);
+        const userId = res.locals.user.id;
+        const { content } = req.body;
+
+        let media;
+        if(req.files){
+            media = await uploadToCloudinary(req.files as Express.Multer.File[]);
+        }
+
+        const reply = await threadService.createReply({
+            content,
+            userId,
+            threadId,
+            media
+        });
+
+        res.json(reply);
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: (error as Error).message });

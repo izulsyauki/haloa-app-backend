@@ -1,4 +1,4 @@
-import { CreateThreadDto } from "../dto/thread-dto";
+import { CreateReplyDto, CreateThreadDto } from "../dto/thread-dto";
 import * as threadRepository from "../repositories/threadRepository";
 
 /**
@@ -32,8 +32,20 @@ export const getThreads = async (userId: number) => {
     }));
 };
 
-export const getThread = async (id: number) => {
-    return await threadRepository.findThreadById(id);
+export const getThreadWithReplies = async (threadId: number, userId: number) => {
+    const thread = await threadRepository.findThreadWithReplies(threadId, userId);
+    if(!thread) throw new Error("Thread not found");
+
+    return {
+        ...thread,
+        isLiked: thread.like.length > 0,
+        like: undefined,
+        replies: thread.replies.map((reply: any) => ({
+            ...reply,
+            isLiked: reply.like.length > 0,
+            like: undefined,
+        })),
+    };
 };
 
 export const getThreadsByLoggedInUser = async (userId: number, take: number) => {
@@ -43,3 +55,7 @@ export const getThreadsByLoggedInUser = async (userId: number, take: number) => 
 export const getUserThreads = async (userId: number) => {
     return await threadRepository.findThreadByUserId(userId);
 };
+
+export const createReply = async (data: CreateReplyDto) => {
+    return await threadRepository.createReply(data);
+}

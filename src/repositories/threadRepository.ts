@@ -1,4 +1,4 @@
-import { CreateThreadDto, ThreadMedia } from "../dto/thread-dto";
+import { CreateReplyDto, CreateThreadDto, ThreadMedia } from "../dto/thread-dto";
 import prisma from "../libs/prisma";
 import { Prisma } from "@prisma/client";
 
@@ -20,6 +20,9 @@ export const createThreadMedia = async (media: ThreadMedia[], id: number) => {
 
 export const findManyThreads = async (userId: number) => {
     return await prisma.threads.findMany({
+        where: {
+            mainThreadId: null,
+        },
         include: {
             user: {
                 include: {
@@ -150,4 +153,90 @@ export const findThreadByUserId = async (userId: number) => {
         },
         take: 10,
     });
+};
+
+export const findThreadWithReplies = async (
+    threadId: number,
+    userId: number
+) => {
+    return await prisma.threads.findUnique({
+        where: {
+            id: threadId,
+        },
+        include: {
+            media: true,
+            user: {
+                include: {
+                    profile: true,
+                },
+            },
+            like: {
+                where: {
+                    userId: userId,
+                },
+            },
+            replies: {
+                include: {
+                    media: true,
+                    user: {
+                        include: {
+                            profile: true,
+                        },
+                    },
+                    like: {
+                        where: {
+                            userId: userId,
+                        },
+                    },
+                    _count: {
+                        select: {
+                            like: true,
+                            replies: true,
+                        },
+                    },
+                },
+                orderBy: {
+                    createdAt: "desc",
+                },
+            },
+            _count: {
+                select: {
+                    like: true,
+                    replies: true,
+                },
+            },
+        },
+    });
+};
+
+export const createReply = async (data: CreateReplyDto) => {
+    const { media, ...threadData } = data;
+
+    const reply = await prisma.threads.create({
+        data: {
+            content: threadData.content,
+            userId: threadData.userId,
+            mainThreadId: threadData.threadId,
+        },
+        include: {
+            user: {
+                include: {
+                    profile: true,
+                },
+            },
+            media: true,
+            _count: {
+                select: {
+                    like: true,
+                    replies: true,
+                },
+            },
+        },
+    });
+
+    if (media && media.length > 0) {
+        await createThreadMedia(media, reply.id);
+    }
+
+    return reply;
 };

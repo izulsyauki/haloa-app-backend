@@ -11,7 +11,12 @@ threadRouter.post(
 );
 threadRouter.get("/", threadControllers.getThreads);
 threadRouter.get("/user-threads", threadControllers.getUserThreads);
-threadRouter.get("/detail/:id", threadControllers.detailThread);
+threadRouter.get("/detail/:id", threadControllers.getThreadDetail);
 threadRouter.get("/feeds", threadControllers.feeds);
+threadRouter.post(
+    "/:threadId/replies",
+    upload.array("media", 4),
+    threadControllers.createReply
+);
 
 export default threadRouter;

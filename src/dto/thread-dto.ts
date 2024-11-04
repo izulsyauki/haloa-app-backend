@@ -8,3 +8,10 @@ export interface CreateThreadDto {
 export interface ThreadMedia {
     url: string;
 }
+
+export interface CreateReplyDto {
+    content: string;
+    userId: number;
+    threadId: number;
+    media?: ThreadMedia[];
+}
