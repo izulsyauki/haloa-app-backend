@@ -91,3 +91,25 @@ export const createReply = async (req: Request, res: Response) => {
         res.status(500).json({ message: (error as Error).message });
     }
 }
+
+export const deleteThread = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const threadId = Number(req.params.id);
+        const userId = res.locals.user.id;
+        
+        if (isNaN(threadId)) {
+            res.status(400).json({ message: "Invalid thread ID" });
+            return;
+        }
+
+        console.log("Deleting thread:", { threadId, userId, paramId: req.params.id });
+        
+        await threadService.deleteThread(threadId, userId);
+        res.json({ message: "Thread deleted successfully" });
+    } catch (error) {
+        console.error("Controller error:", error);
+        res.status(500).json({ 
+            message: error instanceof Error ? error.message : "Internal server error" 
+        });
+    }
+};

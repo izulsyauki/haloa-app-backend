@@ -48,42 +48,32 @@ export const findManyThreads = async (userId: number) => {
     });
 };
 
-export const findThreadById = async (
-    id: number,
-    includeUser: boolean = true
-) => {
-    const include = createIncludeObject(includeUser);
+export const findThreadById = async (threadId: number) => {
+    if (!threadId || isNaN(threadId)) {
+        throw new Error("Invalid thread ID");
+    }
 
     return await prisma.threads.findUnique({
         where: {
-            id: id,
+            id: threadId
         },
-        include: include,
+        include: {
+            media: true,
+            user: {
+                select: {
+                    id: true,
+                    username: true,
+                    profile: true,
+                }
+            },
+            _count: {
+                select: {
+                    replies: true,
+                    like: true,
+                }
+            }
+        }
     });
-};
-
-const createIncludeObject = (includeUser: boolean): Prisma.ThreadsInclude => {
-    const include: Prisma.ThreadsInclude = {
-        media: true,
-        _count: {
-            select: {
-                replies: true,
-                like: true,
-            },
-        },
-    };
-
-    if (includeUser) {
-        include.user = {
-            select: {
-                id: true,
-                username: true,
-                profile: true,
-            },
-        };
-    }
-
-    return include;
 };
 
 export const findThreadByFollowerId = async (userId: number, take: number) => {
@@ -239,4 +229,76 @@ export const createReply = async (data: CreateReplyDto) => {
     }
 
     return reply;
+};
+
+export const deleteThread = async (threadId: number) => {
+    if (!threadId || isNaN(threadId)) {
+        throw new Error("Invalid thread ID");
+    }
+
+    try {
+        // 1. Hapus likes dari replies terlebih dahulu
+        const replies = await prisma.threads.findMany({
+            where: {
+                mainThreadId: threadId
+            },
+            select: {
+                id: true
+            }
+        });
+
+        const replyIds = replies.map(reply => reply.id);
+
+        if (replyIds.length > 0) {
+            await prisma.likes.deleteMany({
+                where: {
+                    threadId: {
+                        in: replyIds
+                    }
+                }
+            });
+
+            // 2. Hapus media dari replies
+            await prisma.threadMedia.deleteMany({
+                where: {
+                    threadId: {
+                        in: replyIds
+                    }
+                }
+            });
+
+            // 3. Hapus replies
+            await prisma.threads.deleteMany({
+                where: {
+                    id: {
+                        in: replyIds
+                    }
+                }
+            });
+        }
+
+        // 4. Hapus likes dari thread utama
+        await prisma.likes.deleteMany({
+            where: {
+                threadId: threadId
+            }
+        });
+
+        // 5. Hapus media dari thread utama
+        await prisma.threadMedia.deleteMany({
+            where: {
+                threadId: threadId
+            }
+        });
+
+        // 6. Terakhir hapus thread utama
+        return await prisma.threads.delete({
+            where: {
+                id: threadId
+            }
+        });
+    } catch (error) {
+        console.error("Repository error deleting thread:", error);
+        throw error;
+    }
 };

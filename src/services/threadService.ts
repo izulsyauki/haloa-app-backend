@@ -13,7 +13,7 @@ export const createThread = async (body: CreateThreadDto) => {
          await threadRepository.createThreadMedia(body.media, thread.id);
     }
 
-    const response = await threadRepository.findThreadById(thread.id, false);
+    const response = await threadRepository.findThreadById(thread.id);
 
     if (response) {
         return response;
@@ -59,3 +59,22 @@ export const getUserThreads = async (userId: number) => {
 export const createReply = async (data: CreateReplyDto) => {
     return await threadRepository.createReply(data);
 }
+
+export const deleteThread = async (threadId: number, userId: number) => {
+    try {
+        const thread = await threadRepository.findThreadById(threadId);
+        
+        if (!thread) {
+            throw new Error("Thread not found");
+        }
+
+        if (thread.userId !== userId) {
+            throw new Error("Unauthorized to delete this thread");
+        }
+
+        return await threadRepository.deleteThread(threadId);
+    } catch (error) {
+        console.error("Service error:", error);
+        throw error;
+    }
+};
