@@ -122,6 +122,7 @@ export const findThreadByUserId = async (userId: number) => {
     return await prisma.threads.findMany({
         where: {
             userId: userId,
+            mainThreadId: null,
         },
         include: {
             media: true,
@@ -135,6 +136,7 @@ export const findThreadByUserId = async (userId: number) => {
             _count: {
                 select: {
                     like: true,
+                    replies: true,
                 },
             },
         },
