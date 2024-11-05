@@ -14,9 +14,8 @@ export const getProfile = async (req: Request, res: Response) => {
 };
 
 export const updateProfile = async (req: Request, res: Response) => {
-    console.log("updateProfile");
     try {
-        const id =  res.locals.user.id;
+        const id = res.locals.user.id;
         const body: UpdateProfileDto = req.body;
 
         if (req.files) {
@@ -28,11 +27,11 @@ export const updateProfile = async (req: Request, res: Response) => {
             });
         }
 
-        const profile = await profileService.updateProfile(body, id);
-
-        res.json({ 
+        const updatedProfile = await profileService.updateProfile(body, id);
+        
+        res.status(200).json({ 
             message: "Profile updated successfully",
-            profile,
+            profile: updatedProfile
         });
     } catch (error) {
         console.log(error);

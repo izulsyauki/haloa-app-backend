@@ -23,6 +23,12 @@ export const findUserAndProfile = async (username: string) => {
         },
         include: {
             profile: true,
+            _count: {
+                select: {
+                    follower: true,
+                    following: true,
+                }
+            }
         },
     });
 };

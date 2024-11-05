@@ -30,13 +30,28 @@ export const authCheck = async (req: Request, res: Response) => {
         const user = res.locals.user;
 
         if(!user) {
-             res.status(401).json({message: "account unathorized"})
+             res.status(401).json({message: "account unauthorized"});
              return;
         }
+
         const profile = await profileService.getProfile(user.username);
-        res.json({ profile });
+        
+        if (!profile) {
+            return res.status(404).json({ 
+                message: "Profile not found" 
+            });
+        }
+
+        // Selalu return status 200 dengan data profile
+        return res.status(200).json({ 
+            message: "Success get profile",
+            profile 
+        });
+        
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: (error as Error).message });
+        console.error("Error fetching profile:", error);
+        res.status(500).json({ 
+            message: (error as Error).message 
+        });
     }
 };
