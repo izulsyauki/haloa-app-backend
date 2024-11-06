@@ -7,6 +7,10 @@ export const getProfile = async (username: string) => {
     return userRepository.findUserAndProfile(username);
 }
 
+export const getProfileById = async (id: number) => {
+    return userRepository.findUserAndProfileById(id);
+}
+
 export const updateProfile = async (dto: UpdateProfileDto, id: number) => {
     await Promise.all(
         Object.entries(dto).map(async([key, value]) => {

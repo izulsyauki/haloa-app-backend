@@ -34,7 +34,7 @@ export const authCheck = async (req: Request, res: Response) => {
              return;
         }
 
-        const profile = await profileService.getProfile(user.username);
+        const profile = await profileService.getProfileById(user.id);
         
         if (!profile) {
             return res.status(404).json({ 
@@ -42,7 +42,6 @@ export const authCheck = async (req: Request, res: Response) => {
             });
         }
 
-        // Selalu return status 200 dengan data profile
         return res.status(200).json({ 
             message: "Success get profile",
             profile 

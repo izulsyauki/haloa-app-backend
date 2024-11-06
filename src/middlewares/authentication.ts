@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
 interface DecodedToken {
+    id: number;
     username: string;
     // tambahkan properti lain yang mungkin ada di token Anda
 }

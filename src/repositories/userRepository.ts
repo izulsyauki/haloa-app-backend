@@ -109,3 +109,20 @@ export const getSuggestedUsers = async (currentUserId: number, limit: number) =>
         throw error;
     }
 };
+
+export const findUserAndProfileById = async (id: number) => {
+    return prisma.users.findFirst({
+        where: {
+            id,
+        },
+        include: {
+            profile: true,
+            _count: {
+                select: {
+                    follower: true,
+                    following: true,
+                }
+            }
+        },
+    });
+};
