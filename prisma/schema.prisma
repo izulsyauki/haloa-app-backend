@@ -80,3 +80,11 @@ model Likes {
 
   @@id([threadId, userId])
 }
+
+model PasswordReset {
+  id        Int      @id @default(autoincrement())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}

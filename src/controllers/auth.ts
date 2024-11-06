@@ -54,3 +54,31 @@ export const authCheck = async (req: Request, res: Response) => {
         });
     }
 };
+
+export const forgotPassword = async (req: Request, res: Response) => {
+    try {
+        const { email } = req.body;
+        const result = await authService.forgotPassword(email);
+        res.json(result);
+    } catch (error) {
+        console.error("Error in forgot password:", error);
+        res.status(400).json({ message: (error as Error).message });
+    }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+    try {
+        const { token } = req.params;
+        const { newPassword } = req.body;
+        
+        if (!newPassword || !token) {
+            return res.status(400).json({ message: "New Password and Token are required" });
+        }
+
+        const result = await authService.resetPassword(token, newPassword);
+        res.json(result);
+    } catch (error) {
+        console.error("Error in reset password:", error);
+        res.status(400).json({ message: (error as Error).message });
+    }
+};
