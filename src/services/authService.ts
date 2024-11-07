@@ -71,7 +71,7 @@ export const forgotPassword = async (email: string) => {
     const user = await userRepository.findUserByEmailorUsername(email);
     
     if (!user) {
-        throw new Error("Email is");
+        throw new Error("Email not found");
     }
 
     // Generate token
@@ -87,8 +87,14 @@ export const forgotPassword = async (email: string) => {
         }
     });
 
+    // get user profile
+    const userProfile = await userRepository.findUserAndProfile(user.id.toString());
+
+    // set display name
+    const displayName = userProfile?.profile?.fullName || user.username;
+
     // Kirim email
-    const emailSent = await sendResetPasswordEmail(user.email, token);
+    const emailSent = await sendResetPasswordEmail(user.email, token, displayName);
     
     if (!emailSent) {
         throw new Error("Failed to send reset password email");
