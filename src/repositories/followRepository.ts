@@ -2,13 +2,54 @@ import prisma from "../libs/prisma";
 
 export const createFollow = async (followerId: number, followingId: number) => {
     try {
-        return await prisma.follows.create({
+        console.log("Creating follow with:", { followerId, followingId });
+
+        // Validasi user exists
+        const [follower, following] = await Promise.all([
+            prisma.users.findUnique({ 
+                where: { id: followerId },
+                include: { profile: true }
+            }),
+            prisma.users.findUnique({ 
+                where: { id: followingId },
+                include: { profile: true }
+            })
+        ]);
+
+        console.log("Found users:", { follower, following });
+
+        if (!follower || !following) {
+            throw new Error(`User not found. Follower: ${!!follower}, Following: ${!!following}`);
+        }
+
+        // Cek jika mencoba follow diri sendiri
+        if (followerId === followingId) {
+            throw new Error("Cannot follow yourself");
+        }
+
+        const result = await prisma.follows.create({
             data: {
-                followerId,  // user yang melakukan follow (yang login)
-                followingId, // user yang di-follow (suggested user)
+                followerId,
+                followingId,
             },
+            include: {
+                following: {
+                    select: {
+                        id: true,
+                        username: true,
+                        profile: true
+                    }
+                }
+            }
         });
+
+        console.log("Created follow:", result);
+        return result;
+
     } catch (error) {
+        if (error instanceof Error && error.message.includes('Unique constraint')) {
+            throw new Error("Already following this user");
+        }
         console.error("Error creating follow:", error);
         throw error;
     }
@@ -17,7 +58,10 @@ export const createFollow = async (followerId: number, followingId: number) => {
 export const deleteFollow = async (followerId: number, followingId: number) => {
     return await prisma.follows.delete({
         where: {
-            followingId_followerId: { followerId, followingId },
+            followingId_followerId: { 
+                followingId,
+                followerId 
+            },
         },
     });
 };
@@ -26,8 +70,8 @@ export const findFollow = async (followerId: number, followingId: number) => {
     return await prisma.follows.findUnique({
         where: {
             followingId_followerId: {
-                followerId,
                 followingId,
+                followerId
             },
         },
     });
@@ -55,15 +99,23 @@ export const countFollowing = async (userId: number) => {
 export const getFollowers = async (userId: number) => {
     return await prisma.follows.findMany({
         where: {
-            followingId: userId, // mencari dimana user adalah yang diikuti
+            followingId: userId,
         },
         include: {
             follower: { 
                 select: {
+                    id: true,
                     username: true,
-                    profile: true,
+                    profile: {
+                        select: {
+                            fullName: true,
+                            bio: true,
+                            avatar: true,
+                            banner: true
+                        }
+                    }
                 },
-            }, // include data user yang mengikuti
+            },
         },
     });
 };
@@ -72,13 +124,21 @@ export const getFollowers = async (userId: number) => {
 export const getFollowing = async (userId: number) => {
     return await prisma.follows.findMany({
         where: {
-            followerId: userId, // mencari dimana user adalah yang mengikuti
+            followerId: userId,
         },
         include: {
             following: { 
                 select: {
+                    id: true,
                     username: true,
-                    profile: true,
+                    profile: {
+                        select: {
+                            fullName: true,
+                            bio: true,
+                            avatar: true,
+                            banner: true
+                        }
+                    }
                 },
             },
         },

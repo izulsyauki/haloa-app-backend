@@ -2,6 +2,7 @@ import * as followRepository from "../repositories/followRepository";
 
 export const createFollow = async (followerId: number, followingId: number) => {
     try {
+        // Cek existing follow
         const exist = await followRepository.findFollow(followerId, followingId);
 
         if (exist) {
@@ -21,8 +22,16 @@ export const createFollow = async (followerId: number, followingId: number) => {
             data: follow 
         };
     } catch (error) {
+        if (error instanceof Error) {
+            if (error.message === "User not found") {
+                throw new Error("User not found");
+            }
+            if (error.message === "Cannot follow yourself") {
+                throw new Error("Cannot follow yourself");
+            }
+        }
         console.error("Error in follow service:", error);
-        throw error;
+        throw new Error("Failed to process follow request");
     }
 };
 
