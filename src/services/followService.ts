@@ -10,7 +10,8 @@ export const createFollow = async (followerId: number, followingId: number) => {
             await followRepository.deleteFollow(followerId, followingId);
             return { 
                 message: "unfollowed",
-                status: false 
+                status: false,
+                counts: await getFollowCounts(followerId)
             };
         }
 
@@ -19,7 +20,8 @@ export const createFollow = async (followerId: number, followingId: number) => {
         return { 
             message: "followed",
             status: true,
-            data: follow 
+            data: follow,
+            counts: await getFollowCounts(followerId)
         };
     } catch (error) {
         if (error instanceof Error) {
@@ -40,9 +42,21 @@ export const checkFollow = async (followerId: number, followingId: number) => {
 };
 
 export const getFollowCounts = async (userId: number) => {
-    const followers = await followRepository.countFollowers(userId);
-    const following = await followRepository.countFollowing(userId);
-    return { followers, following };
+    try {
+        // Hitung followers (user yang mengikuti userId)
+        const followers = await followRepository.countFollowers(userId);
+        // Hitung following (user yang diikuti oleh userId)
+        const following = await followRepository.countFollowing(userId);
+
+        // Kembalikan dengan nama yang jelas
+        return {
+            followers: followers,    // Jumlah orang yang mengikuti userId
+            following: following     // Jumlah orang yang diikuti oleh userId
+        };
+    } catch (error) {
+        console.error("Error in getFollowCounts:", error);
+        throw error;
+    }
 };
 
 export const getFollowers = async (userId: number) => {
