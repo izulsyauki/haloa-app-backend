@@ -27,8 +27,8 @@ export const findUserAndProfile = async (username: string) => {
                 select: {
                     follower: true,
                     following: true,
-                }
-            }
+                },
+            },
         },
     });
 };
@@ -78,7 +78,10 @@ export const findUserByEmailorUsername = async (usernameOrEmail: string) => {
     });
 };
 
-export const getSuggestedUsers = async (currentUserId: number, limit: number) => {
+export const getSuggestedUsers = async (
+    currentUserId: number,
+    limit: number
+) => {
     try {
         const users = await prisma.users.findMany({
             take: limit,
@@ -89,18 +92,18 @@ export const getSuggestedUsers = async (currentUserId: number, limit: number) =>
                 // Exclude users yang sudah di-follow
                 follower: {
                     none: {
-                        followerId: currentUserId
-                    }
-                }
+                        followerId: currentUserId,
+                    },
+                },
             },
             include: {
                 profile: true,
                 follower: {
                     where: {
-                        followerId: currentUserId
-                    }
-                }
-            }
+                        followerId: currentUserId,
+                    },
+                },
+            },
         });
 
         return users;
@@ -121,8 +124,37 @@ export const findUserAndProfileById = async (id: number) => {
                 select: {
                     follower: true,
                     following: true,
-                }
-            }
+                },
+            },
         },
     });
 };
+
+export const getDetailUser = async (id: number) => {
+    return prisma.users.findUnique({
+        where:{
+            id,
+        },
+        include: {
+            profile: true,
+            _count: {
+                select: {
+                    follower: true,
+                    following: true,
+                },
+            },
+            threads: {
+                include: {
+                    media: true,
+                    like: true,
+                    _count: {
+                        select: {
+                            like: true,
+                            replies: true,
+                        },
+                    },
+                },
+            },
+        }
+    })
+}

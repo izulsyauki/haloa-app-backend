@@ -20,3 +20,13 @@ export const getSuggestedUsers = async (currentUserId: number, limit: number) =>
         throw error;
     }
 };
+
+export const getDetailUser = async (id: number) => {
+    try {
+         const profile = await userRepository.getDetailUser(id);
+         return profile;
+    } catch (error) {
+        console.error("Error in getDetailUser service:", error);
+        throw error;
+    }
+}
