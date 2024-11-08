@@ -1,3 +1,4 @@
+import { log } from "console";
 import { CreateReplyDto, CreateThreadDto } from "../dto/thread-dto";
 import * as threadRepository from "../repositories/threadRepository";
 
@@ -25,7 +26,9 @@ export const createThread = async (body: CreateThreadDto) => {
 export const getThreads = async (userId: number) => {
     const threads = await threadRepository.findManyThreads(userId);
 
-    return threads.map(thread => ({
+    if (typeof threads === 'string') return JSON.parse(threads);
+
+    return threads?.map((thread: any) => ({
         ...thread,
         isLiked: thread.like.length > 0,
         like: undefined,

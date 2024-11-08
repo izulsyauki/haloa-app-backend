@@ -1,8 +1,14 @@
-import { CreateReplyDto, CreateThreadDto, ThreadMedia } from "../dto/thread-dto";
+import {
+    CreateReplyDto,
+    CreateThreadDto,
+    ThreadMedia,
+} from "../dto/thread-dto";
 import prisma from "../libs/prisma";
-import { Prisma } from "@prisma/client";
+import { redisClient } from "../libs/redis-client";
 
 export const createThread = async (createThreadDto: CreateThreadDto) => {
+    redisClient.del(`threads_data:${createThreadDto.userId}`);
+
     const { media, ...data } = createThreadDto;
     return await prisma.threads.create({
         data,
@@ -10,6 +16,8 @@ export const createThread = async (createThreadDto: CreateThreadDto) => {
 };
 
 export const createThreadMedia = async (media: ThreadMedia[], id: number) => {
+    redisClient.del(`threads_data:*`);
+    
     return prisma.threadMedia.createMany({
         data: media.map((media) => ({
             url: media.url,
@@ -19,7 +27,29 @@ export const createThreadMedia = async (media: ThreadMedia[], id: number) => {
 };
 
 export const findManyThreads = async (userId: number) => {
-    return await prisma.threads.findMany({
+    const cachedThreads = await redisClient.get(`threads_data:${userId}`);
+
+    if (cachedThreads) {
+        // Parse data dari redis
+        const parsedThreads = JSON.parse(cachedThreads);
+        return parsedThreads.map((thread: any) => ({
+            ...thread,
+            like: Array.isArray(thread.like) ? thread.like : [],
+            _count: {
+                ...thread._count,
+                like:
+                    typeof thread._count?.like === "number"
+                        ? thread._count.like
+                        : 0,
+                replies:
+                    typeof thread._count?.replies === "number"
+                        ? thread._count.replies
+                        : 0,
+            },
+        }));
+    }
+
+    const threads = await prisma.threads.findMany({
         where: {
             mainThreadId: null,
         },
@@ -46,6 +76,19 @@ export const findManyThreads = async (userId: number) => {
             createdAt: "desc",
         },
     });
+
+    const threadsToCache = threads.map((thread) => ({
+        ...thread,
+        like: Array.isArray(thread.like) ? thread.like : [],
+        _count: {
+            like: thread._count.like || 0,
+            replies: thread._count.replies || 0,
+        },
+    }));
+
+    await redisClient.set(`threads_data:${userId}`, JSON.stringify(threadsToCache));
+
+    return threads;
 };
 
 export const findThreadById = async (threadId: number) => {
@@ -55,7 +98,7 @@ export const findThreadById = async (threadId: number) => {
 
     return await prisma.threads.findUnique({
         where: {
-            id: threadId
+            id: threadId,
         },
         include: {
             media: true,
@@ -64,15 +107,15 @@ export const findThreadById = async (threadId: number) => {
                     id: true,
                     username: true,
                     profile: true,
-                }
+                },
             },
             _count: {
                 select: {
                     replies: true,
                     like: true,
-                }
-            }
-        }
+                },
+            },
+        },
     });
 };
 
@@ -202,6 +245,8 @@ export const findThreadWithReplies = async (
 };
 
 export const createReply = async (data: CreateReplyDto) => {
+    redisClient.del(`threads_data:${data.userId}`);
+
     const { media, ...threadData } = data;
 
     const reply = await prisma.threads.create({
@@ -234,6 +279,8 @@ export const createReply = async (data: CreateReplyDto) => {
 };
 
 export const deleteThread = async (threadId: number) => {
+    redisClient.del(`threads_data:*`);
+
     if (!threadId || isNaN(threadId)) {
         throw new Error("Invalid thread ID");
     }
@@ -242,62 +289,62 @@ export const deleteThread = async (threadId: number) => {
         // 1. Hapus likes dari replies terlebih dahulu
         const replies = await prisma.threads.findMany({
             where: {
-                mainThreadId: threadId
+                mainThreadId: threadId,
             },
             select: {
-                id: true
-            }
+                id: true,
+            },
         });
 
-        const replyIds = replies.map(reply => reply.id);
+        const replyIds = replies.map((reply) => reply.id);
 
         if (replyIds.length > 0) {
             await prisma.likes.deleteMany({
                 where: {
                     threadId: {
-                        in: replyIds
-                    }
-                }
+                        in: replyIds,
+                    },
+                },
             });
 
             // 2. Hapus media dari replies
             await prisma.threadMedia.deleteMany({
                 where: {
                     threadId: {
-                        in: replyIds
-                    }
-                }
+                        in: replyIds,
+                    },
+                },
             });
 
             // 3. Hapus replies
             await prisma.threads.deleteMany({
                 where: {
                     id: {
-                        in: replyIds
-                    }
-                }
+                        in: replyIds,
+                    },
+                },
             });
         }
 
         // 4. Hapus likes dari thread utama
         await prisma.likes.deleteMany({
             where: {
-                threadId: threadId
-            }
+                threadId: threadId,
+            },
         });
 
         // 5. Hapus media dari thread utama
         await prisma.threadMedia.deleteMany({
             where: {
-                threadId: threadId
-            }
+                threadId: threadId,
+            },
         });
 
         // 6. Terakhir hapus thread utama
         return await prisma.threads.delete({
             where: {
-                id: threadId
-            }
+                id: threadId,
+            },
         });
     } catch (error) {
         console.error("Repository error deleting thread:", error);
