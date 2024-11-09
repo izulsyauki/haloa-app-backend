@@ -27,11 +27,14 @@ export const getSuggestedUsers = async (req: Request, res: Response) => {
 
 export const getDetailUser = async (req: Request, res: Response) => {
     try {
-        const id = +req.params.id;
-        const profile = await userServices.getDetailUser(+id);
-        res.json(profile)
+        const userId = Number(req.params.id);
+        const user = await userServices.getDetailUser(userId);
+        
+        return res.status(200).json(user);
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: (error as Error).message})
+        console.error("Error in getDetailUser controller:", error);
+        return res.status(500).json({ 
+            error: "Internal server error" 
+        });
     }
 };

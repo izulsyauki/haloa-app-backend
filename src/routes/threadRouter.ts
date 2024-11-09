@@ -13,6 +13,7 @@ threadRouter.post(
 
 threadRouter.get("/", threadControllers.getThreads);
 threadRouter.get("/user-threads", threadControllers.getUserThreads);
+threadRouter.get("/user-threads/:userId", threadControllers.getOtherUserThreads);
 threadRouter.get("/detail/:id", threadControllers.getThreadDetail);
 threadRouter.get("/feeds", threadControllers.feeds);
 

@@ -65,6 +65,17 @@ export const getUserThreads = async (req: Request, res: Response) => {
         console.log(error);
         res.status(500).json({ message: (error as Error).message });
     }
+
+}
+export const getOtherUserThreads = async (req: Request, res: Response) => {
+    try {
+        const userId = Number(req.params.userId);
+        const threads = await threadService.getUserThreads(userId);
+        res.json(threads);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: (error as Error).message });
+    }
 }
 
 export const createReply = async (req: Request, res: Response) => {
