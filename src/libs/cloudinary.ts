@@ -17,6 +17,11 @@ export const uploadToCloudinary = async (files: Express.Multer.File[]) => {
             const dataURI = `data:${file.mimetype};base64,${base64}`;
             const result = await cloudinary.uploader.upload(dataURI, {
                 folder: "haloa-app",
+                tranformation: [
+                    {width: 1200, crop: "limit"},
+                    {quality: "auto"},
+                    {fetch_format: "auto"}
+                ]
             });
             urls.push({
                 url: result.secure_url,
