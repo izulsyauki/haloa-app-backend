@@ -26,11 +26,9 @@ export const register = async (registerInfo: RegisterDto) => {
     }
 
     const hashedPassword = await bcrypt.hash(registerInfo.password, 10);
-    const generateUsername = registerInfo.email.split("@")[0];
 
     const createdUser = await userRepository.createUser({
         ...registerInfo,
-        username: generateUsername,
         password: hashedPassword,
     });
     return createdUser;
