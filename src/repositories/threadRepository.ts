@@ -18,7 +18,7 @@ export const createThread = async (createThreadDto: CreateThreadDto) => {
 export const createThreadMedia = async (media: ThreadMedia[], id: number) => {
     const thread = await prisma.threads.findUnique({
         where: { id },
-        select: { userId: true },
+        select: { userId: true } 
     });
 
     if (thread) {
@@ -34,29 +34,28 @@ export const createThreadMedia = async (media: ThreadMedia[], id: number) => {
 };
 
 export const findManyThreads = async (userId: number) => {
-    const cachedThreads = JSON.stringify(redis.get(`threads_data:${userId}`));
+    const cachedThreads = await redis.get(`threads_data:${userId}`);
     console.log("ini cached threads", cachedThreads);
 
-    if (cachedThreads) {
-        // Parse data dari redis
-        const parsedThreads = JSON.parse(cachedThreads);
-        console.log("ini parsed threads", parsedThreads);
+    if (cachedThreads && typeof cachedThreads === "string") {
+        try {
+            // Data dari redis sudah dalam bentuk string, langsung parse saja
+            const parsedThreads = JSON.parse(cachedThreads);
+            console.log("ini parsed threads", parsedThreads);
 
-        return parsedThreads.map((thread: any) => ({
-            ...thread,
-            like: Array.isArray(thread.like) ? thread.like : [],
-            _count: {
-                ...thread._count,
-                like:
-                    typeof thread._count?.like === "number"
-                        ? thread._count.like
-                        : 0,
-                replies:
-                    typeof thread._count?.replies === "number"
-                        ? thread._count.replies
-                        : 0,
-            },
-        }));
+            return parsedThreads.map((thread: any) => ({
+                ...thread,
+                like: Array.isArray(thread.like) ? thread.like : [],
+                _count: {
+                    ...thread._count,
+                    like: typeof thread._count?.like === "number" ? thread._count.like : 0,
+                    replies: typeof thread._count?.replies === "number" ? thread._count.replies : 0,
+                },
+            }));
+        } catch (error) {
+            console.error("Error parsing cached threads:", error);
+            // Jika terjadi error saat parsing, lanjut mengambil data dari database
+        }
     }
 
     const threads = await prisma.threads.findMany({
@@ -291,13 +290,13 @@ export const createReply = async (data: CreateReplyDto) => {
 export const deleteThread = async (threadId: number) => {
     const thread = await prisma.threads.findUnique({
         where: { id: threadId },
-        select: { userId: true },
+        select: { userId: true } 
     });
 
     if (thread) {
         redis.del(`threads_data:${thread.userId}`);
     }
-
+    
     if (!threadId || isNaN(threadId)) {
         throw new Error("Invalid thread ID");
     }
