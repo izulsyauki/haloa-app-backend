@@ -18,7 +18,7 @@ export const createThread = async (createThreadDto: CreateThreadDto) => {
 export const createThreadMedia = async (media: ThreadMedia[], id: number) => {
     const thread = await prisma.threads.findUnique({
         where: { id },
-        select: { userId: true } 
+        select: { userId: true },
     });
 
     if (thread) {
@@ -35,10 +35,13 @@ export const createThreadMedia = async (media: ThreadMedia[], id: number) => {
 
 export const findManyThreads = async (userId: number) => {
     const cachedThreads = JSON.stringify(redis.get(`threads_data:${userId}`));
+    console.log("ini cached threads", cachedThreads);
 
     if (cachedThreads) {
         // Parse data dari redis
         const parsedThreads = JSON.parse(cachedThreads);
+        console.log("ini parsed threads", parsedThreads);
+
         return parsedThreads.map((thread: any) => ({
             ...thread,
             like: Array.isArray(thread.like) ? thread.like : [],
@@ -288,13 +291,13 @@ export const createReply = async (data: CreateReplyDto) => {
 export const deleteThread = async (threadId: number) => {
     const thread = await prisma.threads.findUnique({
         where: { id: threadId },
-        select: { userId: true } 
+        select: { userId: true },
     });
 
     if (thread) {
         redis.del(`threads_data:${thread.userId}`);
     }
-    
+
     if (!threadId || isNaN(threadId)) {
         throw new Error("Invalid thread ID");
     }
