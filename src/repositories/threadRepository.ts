@@ -4,10 +4,10 @@ import {
     ThreadMedia,
 } from "../dto/thread-dto";
 import prisma from "../libs/prisma";
-import { redisClient } from "../libs/redis-client";
+import { redis } from "../libs/upstash-redis";
 
 export const createThread = async (createThreadDto: CreateThreadDto) => {
-    redisClient.del(`threads_data:${createThreadDto.userId}`);
+    redis.del(`threads_data:${createThreadDto.userId}`);
 
     const { media, ...data } = createThreadDto;
     return await prisma.threads.create({
@@ -22,7 +22,7 @@ export const createThreadMedia = async (media: ThreadMedia[], id: number) => {
     });
 
     if (thread) {
-        redisClient.del(`threads_data:${thread.userId}`);
+        redis.del(`threads_data:${thread.userId}`);
     }
 
     return prisma.threadMedia.createMany({
@@ -34,7 +34,7 @@ export const createThreadMedia = async (media: ThreadMedia[], id: number) => {
 };
 
 export const findManyThreads = async (userId: number) => {
-    const cachedThreads = await redisClient.get(`threads_data:${userId}`);
+    const cachedThreads = JSON.stringify(redis.get(`threads_data:${userId}`));
 
     if (cachedThreads) {
         // Parse data dari redis
@@ -93,7 +93,7 @@ export const findManyThreads = async (userId: number) => {
         },
     }));
 
-    await redisClient.set(`threads_data:${userId}`, JSON.stringify(threadsToCache));
+    await redis.set(`threads_data:${userId}`, JSON.stringify(threadsToCache));
 
     return threads;
 };
@@ -252,7 +252,7 @@ export const findThreadWithReplies = async (
 };
 
 export const createReply = async (data: CreateReplyDto) => {
-    redisClient.del(`threads_data:${data.userId}`);
+    redis.del(`threads_data:${data.userId}`);
 
     const { media, ...threadData } = data;
 
@@ -292,7 +292,7 @@ export const deleteThread = async (threadId: number) => {
     });
 
     if (thread) {
-        redisClient.del(`threads_data:${thread.userId}`);
+        redis.del(`threads_data:${thread.userId}`);
     }
     
     if (!threadId || isNaN(threadId)) {

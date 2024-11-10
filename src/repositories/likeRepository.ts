@@ -1,5 +1,5 @@
 import prisma from "../libs/prisma";
-import { redisClient } from "../libs/redis-client";
+import { redis } from "../libs/upstash-redis";
 
 export const createLike = async (userId: number, threadId: number) => {
     const result = await prisma.likes.create({
@@ -9,12 +9,12 @@ export const createLike = async (userId: number, threadId: number) => {
         },
     });
 
-    redisClient.del(`threads_data:${userId}`);
+    redis.del(`threads_data:${userId}`);
 
     // Opsional: Hapus cache untuk user lain
-    const keys = await redisClient.keys("threads_data:*");
+    const keys = await redis.keys("threads_data:*");
     if (keys.length > 0) {
-        await redisClient.del(keys);
+        await Promise.all(keys.map((key) => redis.del(key)));
     }
 
     return result;
@@ -30,12 +30,12 @@ export const deleteLike = async (userId: number, threadId: number) => {
         },
     });
 
-    redisClient.del(`threads_data:${userId}`);
+    redis.del(`threads_data:${userId}`);
 
     // Opsional: Hapus cache untuk user lain
-    const keys = await redisClient.keys("threads_data:*");
+    const keys = await redis.keys("threads_data:*");
     if (keys.length > 0) {
-        await redisClient.del(keys);
+        await Promise.all(keys.map((key) => redis.del(key)));
     }
 
     return result;
