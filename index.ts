@@ -35,7 +35,20 @@ app.use(
         customCssUrl: "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css",
         swaggerOptions: {
             persistAuthorization: true,
-            url: process.env.NODE_ENV === "production" ? `${process.env.CORS_BACKEND_PROD}/api-docs` : `${process.env.CORS_BACKEND_DEV}/api-docs`,
+            urls:[
+                {
+                    url: process.env.NODE_ENV === "production" ? `${process.env.CORS_BACKEND_PROD}/api-docs` : `${process.env.CORS_BACKEND_DEV}/api-docs`,
+                    name: process.env.NODE_ENV === "production" ?
+                    "Production API" : "Development API"
+                }
+            ],
+
+            servers: [
+                {
+                    url: process.env.NODE_ENV === "production" ? process.env.CORS_BACKEND_PROD : process.env.CORS_BACKEND_DEV,
+                    description: process.env.NODE_ENV === "production" ? "Production Server" : "Development Server"
+                }
+            ]
         },
     })
 );
