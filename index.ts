@@ -13,6 +13,7 @@ app.use(
     Cors({
         origin: [
             process.env.CORS_ORIGIN_DEV || "",
+            process.env.CORS_BACKEND_PROD || "",
             process.env.CORS_ORIGIN_PROD || "",
         ],
     })
