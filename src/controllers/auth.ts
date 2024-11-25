@@ -4,6 +4,17 @@ import * as profileService from "../services/profileService";
 import { LoginDto, RegisterDto } from "../dto/auth-dto";
 
 export const register = async (req: Request, res: Response) => {
+    /*  #swagger.requestBody = {
+            required: true,
+            content: {
+                "application/json": {
+                    schema: {
+                        $ref: "#/components/schemas/RegisterDto"
+                    }  
+                }
+            }
+        } 
+    */
     try {
         const bodyRegister = req.body as RegisterDto;
         const user = await authService.register(bodyRegister);
@@ -15,6 +26,17 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
+    /*  #swagger.requestBody = {
+            required: true,
+            content: {
+                "application/json": {
+                    schema: {
+                        $ref: "#/components/schemas/LoginDto"
+                    }  
+                }
+            }
+        } 
+    */
     try {
         const dataUserForLogin = req.body as LoginDto;
         const { token, user } = await authService.login(dataUserForLogin);

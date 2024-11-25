@@ -13,6 +13,9 @@ export const authentication = (
     next: NextFunction
 ) => {
     try {
+        /* #swagger.security = [{
+            "bearerAuth": []
+        }] */
         const { authorization } = req.headers;
 
         if (!authorization) {
@@ -24,14 +27,17 @@ export const authentication = (
 
         if (!token) {
             res.status(401).json({ message: "Token not valid" });
-            return ;
+            return;
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || "RAHASIA") as DecodedToken;
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET || "RAHASIA"
+        ) as DecodedToken;
 
         if (!decoded || !decoded.username) {
             res.status(401).json({ message: "Token not valid" });
-            return
+            return;
         }
 
         res.locals.user = decoded;
