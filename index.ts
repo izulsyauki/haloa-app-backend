@@ -25,8 +25,8 @@ app.use(
     swaggerUI.setup(swaggerDocument, {
         customSiteTitle: "HaloA API",
         isExplorer: true,
-        customJs: "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.18.2/swagger-ui-bundle.min.js",
-        customCssUrl: "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.18.2/swagger-ui.min.css",
+        customJs: "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.18.2/swagger-ui-bundle.js",
+        customCssUrl: "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.18.2/swagger-ui.css",
         swaggerOptions: {
             persistAuthorization: true,
         },
