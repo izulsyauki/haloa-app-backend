@@ -7,7 +7,7 @@ const doc = {
     info: {
         title: 'My haloa API',
         url: process.env.NODE_ENV === "production" ? process.env.CORS_BACKEND_PROD : process.env.CORS_BACKEND_DEV,
-        description: process.env.NODE_ENV === "production" ? "This is the API for the haloa app Production" : "This is the API for the haloa app Development"
+        description: "This is the API for the haloa app"
     },
     host: process.env.NODE_ENV === "production" ? process.env.CORS_BACKEND_PROD : process.env.CORS_BACKEND_DEV,
     components: {
