@@ -9,20 +9,7 @@ dotenv.config();
 const port = process.env.PORT || 3000;
 
 const app: Express = express();
-app.use(
-    Cors({
-        origin: [
-            process.env.CORS_BACKEND_DEV || "",
-            process.env.CORS_ORIGIN_DEV || "",
-            process.env.CORS_BACKEND_PROD || "",
-            process.env.CORS_ORIGIN_PROD || "",
-        ],
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-        credentials: true,
-        optionsSuccessStatus: 200,
-    })
-);
+app.use(Cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
